@@ -1,0 +1,110 @@
+# This code defines a user authentication and management system using FastAPI, SQLAlchemy for database interaction, and JWT for secure token-based authentication. Here's a breakdown of its components:
+
+# ---
+
+# ### **Imports**
+# - **`fastapi`**: Core library for building APIs.
+#   - `FastAPI`: Framework for creating the app.
+#   - `Depends`: For dependency injection.
+#   - `HTTPException`: For handling errors with custom responses.
+#   - `status`: Predefined HTTP status codes.
+# - **`fastapi.security`**: Provides OAuth2 authentication utilities.
+#   - `OAuth2PasswordBearer`: OAuth2-based token handling.
+#   - `OAuth2PasswordRequestForm`: Form for obtaining username and password.
+# - **`jwt`**: Library for creating and verifying JSON Web Tokens.
+# - **`pydantic`**: Data validation and settings management.
+#   - `BaseModel`: To define structured data for requests and responses.
+# - **`typing.Optional`**: To declare optional types.
+# - **`sqlalchemy`**: ORM for database interaction.
+#   - `create_engine`: Connects to the database.
+#   - `Column`, `Integer`, `String`: Define schema for database tables.
+#   - `declarative_base`: For creating models mapped to tables.
+#   - `sessionmaker`: For managing database sessions.
+# - **`datetime`**: For handling time-based functionality like token expiration.
+#   - `timedelta`: To define duration.
+#   - `timezone`: To manage timezone-aware datetimes.
+# - **`auth`**: A custom module for hashing and verifying passwords (assumed to exist in the project).
+
+# ---
+
+# ### **Constants**
+# - **`SECRET_KEY`**: Used to sign JWTs. Should be securely stored (e.g., in environment variables).
+# - **`ALGORITHM`**: Algorithm for signing the JWT, here `HS256` (HMAC SHA-256).
+# - **`ACCESS_TOKEN_EXPIRE_MINUTES`**: Duration (30 minutes) after which tokens expire.
+
+# ---
+
+# ### **Database Setup**
+# - **`DATABASE_URL`**: Points to an SQLite database (`users.db`).
+# - **`engine`**: SQLAlchemy engine for database connection.
+# - **`SessionLocal`**: Session factory for database transactions.
+# - **`Base`**: Base class for defining database models.
+
+# ---
+
+# ### **Database Models**
+# - **`UserInDB`**: Represents a user in the database.
+#   - Fields: `id`, `username`, and `hashed_password`.
+#   - `unique=True`: Ensures no duplicate usernames.
+#   - `index=True`: Improves query performance.
+
+# ---
+
+# ### **Pydantic Models**
+# 1. **`User`**: Represents user data for signup.
+#    - Fields: `username`, `password`.
+# 2. **`UserInDBSchema`**: Output model for authenticated user.
+#    - Field: `username`.
+#    - `Config.orm_mode=True`: Enables ORM-to-Pydantic conversion.
+# 3. **`ResetPassword`**: Data model for resetting passwords.
+#    - Fields: `username`, `new_password`.
+
+# ---
+
+# ### **Helper Functions**
+# 1. **`get_db`**: Dependency for getting a database session.
+#    - Ensures the session is closed after use.
+# 2. **`create_user`**: Creates and saves a new user in the database.
+#    - Hashes the password using `auth.hash_password`.
+# 3. **`authenticate_user`**: Validates a username and password.
+#    - Compares the password using `auth.verify_password`.
+#    - Returns user info if successful.
+# 4. **`create_access_token`**: Generates a JWT.
+#    - Adds expiration time (`exp`) to token payload.
+#    - Encodes token with `SECRET_KEY`.
+
+# ---
+
+# ### **API Endpoints**
+# 1. **`POST /signup`**
+#    - Registers a new user.
+#    - Checks if the username already exists.
+#    - Uses `create_user` to save the user.
+#    - Returns a success message with the username.
+
+# 2. **`POST /signin`**
+#    - Authenticates a user.
+#    - Uses `OAuth2PasswordRequestForm` for credentials.
+#    - Calls `authenticate_user`.
+#    - Returns a JWT on success.
+
+# 3. **`POST /reset-password`**
+#    - Allows a user to reset their password.
+#    - Verifies the username exists.
+#    - Hashes the new password and updates the database.
+
+# 4. **`POST /logout`**
+#    - Simulates user logout by verifying the token.
+#    - Decodes the token to check validity.
+#    - Returns a success message if valid.
+
+# ---
+
+# ### **Token Verification**
+# - `jwt.decode`: Decodes the token to validate it.
+#   - `ExpiredSignatureError`: Raised when the token has expired.
+#   - `InvalidTokenError`: Raised for malformed tokens.
+
+# ---
+
+# This system provides a basic framework for user management with secure authentication. It uses a database to persist user data and JWTs for stateless authentication. Let me know if you'd like deeper insights into any specific part!
